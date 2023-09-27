@@ -1,0 +1,7 @@
+munch
+wandb
+hydra-core
+omegaconf
+ftfy
+regex
+tqdm

@@ -43,12 +43,12 @@ def affine_correction(mask, corrected_depth, current_min, step):
     return corrected_depth, current_min, current_max
 
 
-def correct_depth(predicted_depth, gt_relative_depth, method=simple_correction, pad_token=209):
+def correct_depth(predicted_depth, gt_relative_depth, method=simple_correction, pad_token=209, step_kind='adaptive'):
     corrected_depth = np.copy(predicted_depth) - np.min(predicted_depth) # shift to 0
     depths = np.unique(gt_relative_depth)[:-1]
     interdepths = np.unique([d % 10 for d in depths])
     lens = [len(np.where((gt_relative_depth % 10 == d) * (gt_relative_depth != pad_token))[0]) for d in interdepths]
-    steps = getStep(lens)
+    steps = getStep(lens, kind=step_kind)
     current_min = 0
     for i, interdepth in enumerate(interdepths):
         mask = (gt_relative_depth % 10 == interdepth) * (gt_relative_depth != pad_token)
@@ -57,7 +57,7 @@ def correct_depth(predicted_depth, gt_relative_depth, method=simple_correction, 
 
         intradepths = sorted(depths[depths % 10 == interdepth])
         sublens = [len(np.where(gt_relative_depth == d)[0]) for d in intradepths]
-        substeps = getStep(sublens, width=steps[i])
+        substeps = getStep(sublens, width=steps[i], kind=step_kind)
         submin = current_min
         for j, intradepth in enumerate(intradepths):
             submask = gt_relative_depth == intradepth
